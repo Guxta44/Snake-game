@@ -5,8 +5,10 @@ const ctx = canvas.getContext("2d");
 // Configurações do jogo
 const box = 20;
 let snake = [{ x: 10 * box, y: 10 * box }];
-let direction = "RIGHT";
 let food = generateFood();
+let running = false;
+let mouseX = snake[0].x;
+let mouseY = snake[0].y;
 
 // Função para desenhar o jogo
 function draw() {
@@ -19,17 +21,22 @@ function draw() {
 
 // Função para atualizar a lógica do jogo
 function update() {
+    if (!running) return;
     moveSnake();
     checkCollision();
 }
 
-// Função para movimentar a cobra
+// Função para movimentar a cobra seguindo o mouse
 function moveSnake() {
     let head = { ...snake[0] };
-    if (direction === "A") head.x -= box;
-    if (direction === "W") head.y -= box;
-    if (direction === "D") head.x += box;
-    if (direction === "S") head.y += box;
+    let dx = mouseX - head.x;
+    let dy = mouseY - head.y;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        head.x += dx > 0 ? box : -box;
+    } else {
+        head.y += dy > 0 ? box : -box;
+    }
 
     if (head.x === food.x && head.y === food.y) {
         food = generateFood();
@@ -72,12 +79,18 @@ function generateFood() {
     };
 }
 
-// Captura eventos de teclado
+// Captura posição do mouse
+canvas.addEventListener("mousemove", event => {
+    let rect = canvas.getBoundingClientRect();
+    mouseX = Math.floor((event.clientX - rect.left) / box) * box;
+    mouseY = Math.floor((event.clientY - rect.top) / box) * box;
+});
+
+// Captura evento para iniciar o jogo
 document.addEventListener("keydown", event => {
-    if (event.key === "a" && direction !== "D") direction = "A";
-    if (event.key === "w" && direction !== "S") direction = "W";
-    if (event.key === "d" && direction !== "A") direction = "D";
-    if (event.key === "s" && direction !== "W") direction = "S";
+    if (event.key === "q" || event.key === "Q") {
+        running = true;
+    }
 });
 
 // Loop do jogo
